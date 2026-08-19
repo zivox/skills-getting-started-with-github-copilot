@@ -4,6 +4,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
+  // Helper to get initials from an email (shared)
+  function getInitials(email) {
+    try {
+      const namePart = email.split("@")[0];
+      const parts = namePart.split(/[._\-]/).filter(Boolean);
+      if (parts.length === 0) return email.slice(0, 2).toUpperCase();
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    } catch (e) {
+      return email.slice(0, 2).toUpperCase();
+    }
+  }
+
   // Function to fetch activities from API
   async function fetchActivities() {
     try {
@@ -13,18 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
       // Clear loading message
       activitiesList.innerHTML = "";
 
-      // Helper to get initials from an email
-      function getInitials(email) {
-        try {
-          const namePart = email.split("@")[0];
-          const parts = namePart.split(/[._\-]/).filter(Boolean);
-          if (parts.length === 0) return email.slice(0, 2).toUpperCase();
-          if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-          return (parts[0][0] + parts[1][0]).toUpperCase();
-        } catch (e) {
-          return email.slice(0, 2).toUpperCase();
-        }
-      }
 
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
@@ -92,6 +93,14 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
+
+        // Update the activity card immediately so the user sees the change
+        try {
+          addParticipantToCard(activity, email);
+        } catch (e) {
+          // fallback: refresh full list if something goes wrong
+          fetchActivities();
+        }
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";
@@ -113,6 +122,62 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize app
   fetchActivities();
+
+  // Add a participant row to the DOM for a given activity (optimistic update)
+  function addParticipantToCard(activityName, email) {
+    const cards = Array.from(activitiesList.querySelectorAll('.activity-card'));
+    const card = cards.find((c) => c.dataset.activity === activityName);
+    if (!card) return;
+
+    const participantsContainer = card.querySelector('.activity-participants');
+    let list = participantsContainer && participantsContainer.querySelector('.participants-list');
+
+    // If no participants section yet, create it
+    if (!participantsContainer) {
+      const container = document.createElement('div');
+      container.className = 'activity-participants';
+      container.innerHTML = `<strong>Participants</strong>`;
+      card.appendChild(container);
+    }
+
+    const container = card.querySelector('.activity-participants');
+
+    // Remove 'no participants' placeholder if present
+    const noPart = container.querySelector('.no-participants');
+    if (noPart) noPart.remove();
+
+    if (!list) {
+      list = document.createElement('ul');
+      list.className = 'participants-list';
+      container.appendChild(list);
+    }
+
+    // Create participant row
+    const li = document.createElement('li');
+    li.className = 'participant';
+    li.dataset.email = email;
+
+    const initials = getInitials(email);
+    li.innerHTML = `
+      <span class="avatar">${initials}</span>
+      <span class="participant-email">${email}</span>
+      <button class="delete-btn" title="Remove participant" data-email="${email}">✕</button>
+    `;
+
+    list.appendChild(li);
+
+    // Update availability text (decrement shown spots)
+    const pTags = Array.from(card.querySelectorAll('p'));
+    const avail = pTags.find(p => p.textContent && p.textContent.includes('spots left'));
+    if (avail) {
+      const match = avail.textContent.match(/(\d+) spots left/);
+      if (match) {
+        const current = parseInt(match[1], 10);
+        const next = Math.max(0, current - 1);
+        avail.innerHTML = `<strong>Availability:</strong> ${next} spots left`;
+      }
+    }
+  }
 
   // Handle participant delete (event delegation)
   activitiesList.addEventListener("click", async (event) => {
