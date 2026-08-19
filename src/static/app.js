@@ -13,6 +13,19 @@ document.addEventListener("DOMContentLoaded", () => {
       // Clear loading message
       activitiesList.innerHTML = "";
 
+      // Helper to get initials from an email
+      function getInitials(email) {
+        try {
+          const namePart = email.split("@")[0];
+          const parts = namePart.split(/[._\-]/).filter(Boolean);
+          if (parts.length === 0) return email.slice(0, 2).toUpperCase();
+          if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+          return (parts[0][0] + parts[1][0]).toUpperCase();
+        } catch (e) {
+          return email.slice(0, 2).toUpperCase();
+        }
+      }
+
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
         const activityCard = document.createElement("div");
@@ -20,11 +33,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
+        // Build participants HTML
+        const participants = details.participants || [];
+        let participantsHtml = `<div class="activity-participants"><strong>Participants</strong>`;
+        if (participants.length === 0) {
+          participantsHtml += `<p class="no-participants">No participants yet</p>`;
+        } else {
+          participantsHtml += `<ul class="participants-list">`;
+          participants.forEach((email) => {
+            const initials = getInitials(email);
+            participantsHtml += `\n              <li class="participant">\n                <span class="avatar">${initials}</span>\n                <span class="participant-email">${email}</span>\n              </li>`;
+          });
+          participantsHtml += `\n            </ul>`;
+        }
+        participantsHtml += `</div>`;
+
         activityCard.innerHTML = `
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          ${participantsHtml}
         `;
 
         activitiesList.appendChild(activityCard);
