@@ -127,6 +127,27 @@ section h3 {
   word-break: break-all;
 }
 
+.delete-btn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #c62828;
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.delete-btn:hover {
+  background: #fdecea;
+  color: #9a1f1f;
+}
+
 .no-participants {
   color: #777;
   font-size: 14px;

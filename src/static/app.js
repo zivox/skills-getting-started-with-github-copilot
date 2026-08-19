@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Object.entries(activities).forEach(([name, details]) => {
         const activityCard = document.createElement("div");
         activityCard.className = "activity-card";
+        activityCard.dataset.activity = name;
 
         const spotsLeft = details.max_participants - details.participants.length;
 
@@ -42,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
           participantsHtml += `<ul class="participants-list">`;
           participants.forEach((email) => {
             const initials = getInitials(email);
-            participantsHtml += `\n              <li class="participant">\n                <span class="avatar">${initials}</span>\n                <span class="participant-email">${email}</span>\n              </li>`;
+            participantsHtml += `\n              <li class="participant" data-email="${email}">\n                <span class="avatar">${initials}</span>\n                <span class="participant-email">${email}</span>\n                <button class="delete-btn" title="Remove participant" data-email="${email}">✕</button>\n              </li>`;
           });
           participantsHtml += `\n            </ul>`;
         }
@@ -112,4 +113,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize app
   fetchActivities();
+
+  // Handle participant delete (event delegation)
+  activitiesList.addEventListener("click", async (event) => {
+    const btn = event.target.closest(".delete-btn");
+    if (!btn) return;
+
+    const activityCard = btn.closest(".activity-card");
+    const activityName = activityCard && activityCard.dataset.activity;
+    const email = btn.dataset.email;
+
+    if (!activityName || !email) return;
+
+    if (!confirm(`Remove ${email} from ${activityName}?`)) return;
+
+    try {
+      const res = await fetch(
+        `/activities/${encodeURIComponent(activityName)}/signup?email=${encodeURIComponent(email)}`,
+        { method: "DELETE" }
+      );
+
+      if (res.ok) {
+        // Refresh the activities list to reflect the change
+        fetchActivities();
+      } else {
+        const result = await res.json();
+        alert(result.detail || "Failed to remove participant");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error removing participant");
+    }
+  });
 });

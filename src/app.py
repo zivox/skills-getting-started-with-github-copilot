@@ -105,3 +105,22 @@ def signup_for_activity(activity_name: str, email: str):
     # Add student
     activity["participants"].append(email)
     return {"message": f"Signed up {email} for {activity_name}"}
+
+
+@app.delete("/activities/{activity_name}/signup")
+def unregister_from_activity(activity_name: str, email: str):
+    """Unregister a student from an activity by email"""
+    # Validate activity exists
+    if activity_name not in activities:
+        raise HTTPException(status_code=404, detail="Activity not found")
+
+    activity = activities[activity_name]
+    normalized = email.strip().lower()
+
+    # If participant not found, return 404
+    if normalized not in [p.lower() for p in activity.get("participants", [])]:
+        raise HTTPException(status_code=404, detail="Participant not found")
+
+    # Remove all matching case-insensitive entries
+    activity["participants"] = [p for p in activity.get("participants", []) if p.lower() != normalized]
+    return {"message": f"Removed {normalized} from {activity_name}"}
