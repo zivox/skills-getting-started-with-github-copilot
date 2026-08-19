@@ -74,6 +74,86 @@ section h3 {
   margin-bottom: 8px;
 }
 
+.activity-participants {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px dashed #e6e6e6;
+}
+
+.activity-participants strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.participants-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 160px;
+  overflow: auto;
+}
+
+.participant {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e0e7ff, #cfe3ff);
+  color: #08306b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.participant-email {
+  color: #444;
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.delete-btn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #c62828;
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.delete-btn:hover {
+  background: #fdecea;
+  color: #9a1f1f;
+}
+
+.no-participants {
+  color: #777;
+  font-size: 14px;
+  margin: 0 0 6px 0;
+}
+
 .form-group {
   margin-bottom: 15px;
 }
